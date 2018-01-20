@@ -1,8 +1,19 @@
+import com.sun.org.apache.regexp.internal.RE;
 import com.sun.tools.doclets.formats.html.SourceToHTMLConverter;
 
 import java.util.ArrayList;
 
 public class Control extends Thread{
+    public static  String BLACK = "\u001B[30m";
+    public static  String RED = "\u001B[31m";
+    public static  String GREEN = "\u001B[32m";
+    public static  String YELLOW = "\u001B[33m";
+    public static  String BLUE = "\u001B[34m";
+    public static  String PURPLE = "\u001B[35m";
+    public static  String CYAN = "\u001B[36m";
+    public static  String WHITE = "\u001B[37m";
+    //Reset code
+    public static  String RESET = "\u001B[0m";
     int num;
     boolean run;
     static ArrayList<Job> jobs = new ArrayList<>(70);
@@ -37,20 +48,20 @@ public class Control extends Thread{
         }
     }
     public static  void removeFromHList(int BSC){
-        System.out.println("Entered remove "+ BSC);
+        System.out.println(YELLOW + "Removed "+ BSC + " from H List"+RESET);
         synchronized (hList) {
             hList.remove(new Integer(BSC));
+            hList.notifyAll();
         }
     }
     public static boolean waitForHandoff(int BSC) {
-        synchronized (hList) {
-            for (Integer i : hList) {
-                if (BSC_Control.getBSC(i).hasNeighbour(BSC)) {
-                    return true;
-                }
+        for (Integer i : hList) {
+            if (BSC_Control.getBSC(i).hasNeighbour(BSC)) {
+                System.out.println(RED+BSC+ " waiting for neighbour cell " + i+RESET);
+                return true;
             }
-            return false;
         }
+        return false;
     }
 
     public void run(){
@@ -62,43 +73,44 @@ public class Control extends Thread{
 
                     while (c.job!=null) {
                         try {
+                            System.out.println("Waiting for cell  "+ j.cell +" to finish pending job");
                             c.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                }
-                while (waitForHandoff(j.cell)) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    System.out.println("Cell  "+ j.cell +" finished pending job, now can be offered new job");
+                synchronized (hList) {
+                    while (waitForHandoff(j.cell)) {
+                        try {
+                            System.out.println( j.cell+" waiting for neighbours");
+                            hList.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        //System.out.println("hi");
                     }
-                    //System.out.println("hi");
-                }
-                if (j.event == Event.HANDOFF) {
-                    synchronized (hList) {
+                    System.out.println( j.cell+" has finished waiting for neighbours");
+                    if (j.event == Event.HANDOFF) {
+                        System.out.println(YELLOW+  j.cell+ " has entered the H List" + RESET);
                         hList.add(new Integer(j.cell));
                     }
+                    hList.notifyAll();
                 }
-                synchronized (c) {
                     c.job  = j;
+                    System.out.println(BLUE + "Job given to "+ j.cell + RESET);
                     time = j.startTime;
                     removeJob(j);
                     c.notifyAll();
                 }
-                System.out.println(jobs.size());
-                synchronized (hList) {
-                    for (Integer e : hList)
-                        System.out.println("hList " + e.toString());
-                }
+               // System.out.println(jobs.size());
 
             }
         }
 
 
 
-        for(int i = 19;i<21;i++){
+        for(int i = 0;i<19;i++){
             BSC c = BSC_Control.getBSC(i);
             synchronized (c) {
                 c.job = new Job(i,Event.TERMINATE,time);

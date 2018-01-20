@@ -1,3 +1,4 @@
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Random;
@@ -163,6 +164,7 @@ public class BSC implements Runnable {
         }
         else{ //should never reach this line
             pw.println("No calls to Handoff");
+            Control.removeFromHList(id);
 //            this.data.nextHandoff = totalSimulationTime + 1;
 //            this.data.nextTermination = totalSimulationTime +1;
         }
@@ -246,6 +248,7 @@ public class BSC implements Runnable {
                         e.printStackTrace();
                     }
                 }
+                System.out.println( Control.BLUE + this.id + " has started job" + Control.RESET);
                 print();
                 if (job.event == Event.HANDOFF)
                     handoff();
@@ -256,6 +259,7 @@ public class BSC implements Runnable {
                 else if(job.event == Event.TERMINATE)
                     break;
                 job = null;
+                System.out.println(this.id + " has ended job");
                 this.notifyAll();
             }
         }

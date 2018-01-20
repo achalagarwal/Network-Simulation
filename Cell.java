@@ -23,6 +23,17 @@ public class Cell implements  Runnable {
     int handoffsPending;
     double alpha1;
     double alpha2;
+
+    public  boolean isBusy() {
+        return isBusy;
+    }
+
+    public synchronized void setBusy(boolean busy) {
+        isBusy = busy;
+        this.notifyAll();
+    }
+
+    boolean isBusy;
     final Object handoffLock;
     int N; //consecutive handoffs
     Elements data;
@@ -171,6 +182,12 @@ public class Cell implements  Runnable {
             return neighbours[id];
         else return -1;
     }
+    public boolean hasNeighbour(int x){
+        for(int i = 0;i<neighbours.length;i++)
+            if(x==neighbours[i])
+                return true;
+        return false;
+    }
  //getters and setters
 
 
@@ -232,6 +249,12 @@ public class Cell implements  Runnable {
         if(cellId == 18){
             neighbours = new int[]{1,6,7,17};
         }
+        if(cellId == 19){
+            neighbours = new int[]{20};
+        }
+        if(cellId == 20){
+            neighbours = new int[]{19};
+        }
     }
     public synchronized void turnOn(){
         startTime = System.nanoTime();
@@ -244,7 +267,7 @@ public class Cell implements  Runnable {
     public void handoffHelper(){
         synchronized (this.handoffLock) {
             handoffsPending++;
-            //pw.println("Handoff Connection Request in " + this.cellId);
+            //System.out.println("Handoff Connection Request in " + this.cellId);
         }
     }
     private void resetTermination() {
@@ -259,8 +282,8 @@ public class Cell implements  Runnable {
     }
     public  void requestHandoff(int id) { //a new handoff call request in this cell
         synchronized (this.handoffLock) {
-            pw.println(" New handoff connection request received from Cell Number - " + id);
-            //pw.println("Handoff block entered in " + this.cellId);
+            System.out.println(" New handoff connection request received from Cell Number - " + id);
+            //System.out.println("Handoff block entered in " + this.cellId);
             double presentRatio = handoffDrops * 1.0 / totalHandoffs;
             if (ongoingCalls == totalChannels) {
                 handoffDrops++; //here present ratio does not use the currently dropped handoff, reconfirm
@@ -277,12 +300,14 @@ public class Cell implements  Runnable {
                 ongoingCalls++;
             }
             handoffsPending--;
+            Control.removeFromHList(this.cellId);
         }
     }
     public void sendHandoff() {//sciencedirect ieee springer
         if (ongoingCalls > 0) {
             data.currentEvent = Event.HANDOFF;
             this.data.nextHandoff = data.currentTime + data.getExponentTime(handoffRate);
+            Control.addJob(new Job(this.cellId,Event.HANDOFF,data.nextHandoff));
             ongoingCalls--;
             if(ongoingCalls == 0){
                 resetTermination();
@@ -292,17 +317,18 @@ public class Cell implements  Runnable {
             if(neighbours.length>0) {
                 int random = new Random().nextInt(neighbours.length);
                 CellControl.getCell(neighbours[random]).requestHandoff(this.cellId);
-                pw.println("Handoff Call sent to Cell Number - " + neighbours[random]);
+                System.out.println("Handoff Call sent to Cell Number - " + neighbours[random]);
             }
         }
         else{ //should never reach this line
-            pw.println("No calls to Handoff");
+            System.out.println("No calls to Handoff");
             this.data.nextHandoff = totalSimulationTime + 1;
             this.data.nextTermination = totalSimulationTime +1;
         }
     }
     public void newConnection() {
         this.data.nextArrival = data.currentTime + data.getExponentTime(callArrivalRate);
+        Control.addJob(new Job(this.cellId,Event.CONNECT,data.nextArrival));
         if (ongoingCalls < totalChannels - guardChannels) {// total - guard = Ca
             totalNewCalls++;
             if(ongoingCalls == 0){
@@ -312,13 +338,13 @@ public class Cell implements  Runnable {
             ongoingCalls++;
             data.currentEvent = Event.CONNECT;
             print();
-            pw.println("New Connection Request in " + Thread.currentThread().getName());
+            System.out.println("New Connection Request in " + Thread.currentThread().getName());
 
         }
         else {
             newCallDrops++;
             //print();
-          //  pw.println("New Connection Failed in " + Thread.currentThread().getName());
+          //  System.out.println("New Connection Failed in " + Thread.currentThread().getName());
 
         }
     }
@@ -333,15 +359,16 @@ public class Cell implements  Runnable {
             data.currentEvent = Event.DISCONNECT;
             ongoingCalls--;
             this.data.nextTermination = data.currentTime + data.getExponentTime(callTerminationRate);
+            Control.addJob(new Job(this.cellId,Event.DISCONNECT,data.nextTermination));
             print();
-            pw.println("Call Termination in " + Thread.currentThread().getName());
+            System.out.println("Call Termination in " + Thread.currentThread().getName());
             if(ongoingCalls == 0){
                 resetHandoff();
                 resetTermination();
             }
         }
         else { //should never reach this line during simulation
-            pw.println("No calls to terminate in " + Thread.currentThread().getName());
+            System.out.println("No calls to terminate in " + Thread.currentThread().getName());
             this.data.nextTermination = totalSimulationTime + 1;
             this.data.nextHandoff = totalSimulationTime + 1;
         }
@@ -349,67 +376,106 @@ public class Cell implements  Runnable {
     public void incrementGuardChannel(){
         if(guardChannels<totalChannels) {
             guardChannels++;
-            pw.println("Guard Channels increased to" + guardChannels);
+            System.out.println("Guard Channels increased to" + guardChannels);
         }
     }
     public void decrementGuardChannel(){
         if(guardChannels>0) {
             guardChannels--;
-            pw.println("Guard Channels decreased to" + guardChannels);
+            System.out.println("Guard Channels decreased to" + guardChannels);
         }
     }
     public void print(){
 
-        pw.println(  "**************************************" );
-        pw.println("Time " + data.currentTime);
-        pw.println("Event " + data.currentEvent);
-        pw.println("Ongoing Calls "+ ongoingCalls);
-        pw.println("Handoff Call drops " + handoffDrops );
+        System.out.println(  "**************************************" );
+        System.out.println("Time " + data.currentTime);
+        System.out.println("Event " + data.currentEvent);
+        System.out.println("Ongoing Calls "+ ongoingCalls);
+        System.out.println("Handoff Call drops " + handoffDrops );
 
     }
-    public void run(){
-        synchronized (this) {
-            while (!this.status) {
-                try {
-                //    pw.println(Thread.currentThread().getName() + " is waiting to be turned On");
-                    this.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        pw.println(Thread.currentThread().getName() + " has been turned On");
-        data.currentTime = 0;
-        //newConnection();
+    public void run() {
         ongoingCalls = 1; //initial
         data.currentEvent = Event.CONNECT; // initial
         data.nextArrival = data.currentTime + data.getExponentTime(callArrivalRate);
+        Control.addJob(new Job(this.cellId, Event.CONNECT, data.nextArrival));
         data.nextTermination = data.currentTime + data.getExponentTime(callTerminationRate);
+        Control.addJob(new Job(this.cellId, Event.DISCONNECT, data.nextTermination));
         data.nextHandoff = data.currentTime + data.getExponentTime(handoffRate);
-        print();
-        data.setNextEvent();
+        Control.addJob(new Job(this.cellId, Event.HANDOFF, data.nextHandoff));
         while (data.currentTime < totalSimulationTime) {
             synchronized (this) {
-                if(data.resetTime>22)
+                while (!this.isBusy) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (data.resetTime > 22)
                     reset();
-//                while (handoffsPending>0) {
-//                    this.requestHandoff(cellId);
-//                }
                 if (data.nextEvent == Event.CONNECT)
                     newConnection();
                 else if (data.nextEvent == Event.DISCONNECT) {
                     disconnect();
-                } else if (data.nextEvent == Event.HANDOFF) {
+                }
+                else if (data.nextEvent == Event.HANDOFF) {
                     sendHandoff();
                 }
-                this.notifyAll();
+                if(data.currentEvent == Event.HANDOFF){
+                    Control.removeFromHList(this.cellId);
+                }
                 data.setNextEvent();
+                this.setBusy(false);
+                this.notifyAll();
             }
         }
-        pw.println(this.data.currentTime);
-        pw.println(this.handoffDrops);
-        pw.println(this.totalHandoffs);
         pw.flush();
         pw.close();
     }
+
+//        synchronized (this) {
+//            while (!this.status) {
+//                try {
+//                //    System.out.println(Thread.currentThread().getName() + " is waiting to be turned On");
+//                    this.wait();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//        System.out.println(Thread.currentThread().getName() + " has been turned On");
+//        data.currentTime = 0;
+//        //newConnection();
+//        ongoingCalls = 1; //initial
+//        data.currentEvent = Event.CONNECT; // initial
+//        data.nextArrival = data.currentTime + data.getExponentTime(callArrivalRate);
+//        data.nextTermination = data.currentTime + data.getExponentTime(callTerminationRate);
+//        data.nextHandoff = data.currentTime + data.getExponentTime(handoffRate);
+//        print();
+//        data.setNextEvent();
+//        while (data.currentTime < totalSimulationTime) {
+//            synchronized (this) {
+//                if(data.resetTime>22)
+//                    reset();
+////                while (handoffsPending>0) {
+////                    this.requestHandoff(cellId);
+////                }
+//                if (data.nextEvent == Event.CONNECT)
+//                    newConnection();
+//                else if (data.nextEvent == Event.DISCONNECT) {
+//                    disconnect();
+//                } else if (data.nextEvent == Event.HANDOFF) {
+//                    sendHandoff();
+//                }
+//                this.notifyAll();
+//                data.setNextEvent();
+//            }
+//        }
+//        System.out.println(this.data.currentTime);
+//        System.out.println(this.handoffDrops);
+//        System.out.println(this.totalHandoffs);
+//        pw.flush();
+//        pw.close();
+//    }
 }

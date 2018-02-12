@@ -23,6 +23,9 @@ public class BSC implements Runnable {
     int consecutiveHandoffsLimit;
     double alpha1;
     double alpha2;
+    double lastReset;
+    int periodHandoffs;
+    int periodHandoffDrops;
     PrintWriter pw;
     BSC(int id){
         
@@ -31,21 +34,22 @@ public class BSC implements Runnable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        consecutiveHandoffsLimit = 10;
+        consecutiveHandoffsLimit = 6;
         consecutiveHandoffs = 0;
         guardChannels = 0;
         ongoingCalls = 0;
-        totalChannels = 100;
+        totalChannels = 150;
         handoffDrops = 0;
         totalHandoffs = 0;
         totalNewCalls = 0;
         newCallDrops = 0;
-        handoffThreshold = 0.02;
+        handoffThreshold = 0.1;
         callTerminationRate = 0.2;
         handoffRate = 0.1;
         status = false;
-        callArrivalRate = 0.5;
+        callArrivalRate = 0.4;
         this.id = id;
+        lastReset = 0.0;
         setNeighbours();
     }
     public synchronized void turnOn(){
@@ -127,20 +131,22 @@ public class BSC implements Runnable {
         return false;
     }
     public void handin(int cell){//remove from hlist
-        pw.println(" New handoff connection request received from Cell Number - " + cell);
+        totalHandoffs++;
+        periodHandoffs++;
+        //pw.println(" New handoff connection request received from Cell Number - " + cell);
         //pw.println("Handoff block entered in " + this.cellId);
-        double presentRatio = handoffDrops * 1.0 / totalHandoffs;
+        double presentRatio = periodHandoffDrops * 1.0 / periodHandoffs;
         if (ongoingCalls == totalChannels) {
-            handoffDrops++; //here present ratio does not use the currently dropped handoff, reconfirm
-            if (presentRatio >= handoffThreshold) { //include alpha1
+            periodHandoffDrops++;//here present ratio does not use the currently dropped handoff, reconfirm
+            handoffDrops++;
+            if (presentRatio >= 0.5*handoffThreshold) { //include alpha1
                 incrementGuardChannel();
-            } else if (presentRatio <= handoffThreshold && consecutiveHandoffs == consecutiveHandoffsLimit - 1) { //include alpha2
+            } else if (presentRatio <= 0.3*handoffThreshold && consecutiveHandoffs == consecutiveHandoffsLimit - 1) { //include alpha2
                 decrementGuardChannel();
             }
             consecutiveHandoffs = 0;
         }
         else if (ongoingCalls < totalChannels) {
-            totalHandoffs++;
             consecutiveHandoffs++;
             ongoingCalls++;
         }
@@ -158,29 +164,30 @@ public class BSC implements Runnable {
          //   print();
             if(neighbours.length>0) {
                 int random = new Random().nextInt(neighbours.length);
-                pw.println("Handoff Call sent to Cell Number - " + neighbours[random]);
+                //pw.println("Handoff Call sent to Cell Number - " + neighbours[random]);
                 BSC_Control.getBSC(neighbours[random]).handin(this.id);
             }
         }
         else{ //should never reach this line
-            pw.println("No calls to Handoff");
+            //pw.println("No calls to Handoff");
             Control.removeFromHList(id);
 //            this.data.nextHandoff = totalSimulationTime + 1;
 //            this.data.nextTermination = totalSimulationTime +1;
         }
     }
     public void connect() {
+        totalNewCalls++;
         double t = job.startTime + StdRandom.exp(callArrivalRate);
         Control.addJob(new Job(this.id,Event.CONNECT,t));
         if (ongoingCalls < totalChannels - guardChannels) {// total - guard = Ca
-            totalNewCalls++;
+
 //            if(ongoingCalls == 0){
 //                resetTermination();
 //                resetHandoff();
 //            }
             ongoingCalls++;
            // print();
-            pw.println("New Connection Request in " + Thread.currentThread().getName());
+            //pw.println("New Connection Request in " + Thread.currentThread().getName());
 
         }
         else {
@@ -196,38 +203,48 @@ public class BSC implements Runnable {
         if(ongoingCalls>0) {
             ongoingCalls--;
             //print();
-            pw.println("Call Termination in " + Thread.currentThread().getName());
+          //  pw.println("Call Termination in " + Thread.currentThread().getName());
 //                if(ongoingCalls == 0){
 //                    resetHandoff();
 //                    resetTermination();
 //                }
         }
         else {
-            pw.println("No calls to terminate in " + Thread.currentThread().getName());
+        //    pw.println("No calls to terminate in " + Thread.currentThread().getName());
         }
     }
     public void incrementGuardChannel(){
         if(guardChannels<totalChannels) {
             guardChannels++;
-            pw.println("Guard Channels increased to" + guardChannels);
+          //  pw.println("Guard Channels increased to" + guardChannels);
         }
     }
     public void decrementGuardChannel(){
         if(guardChannels>0) {
             guardChannels--;
-            pw.println("Guard Channels decreased to" + guardChannels);
+           // pw.println("Guard Channels decreased to" + guardChannels);
         }
+    }
+    public void reset(){
+        lastReset = job.startTime;
+        periodHandoffs = 0;
+        periodHandoffDrops = 0;
     }
     public void print(){
 
-        pw.println(  "**************************************" );
-        pw.println("Time " + job.startTime);
-        pw.println("Event " + job.event);
-        pw.println("Ongoing Calls "+ ongoingCalls);
-        
+//        pw.println(  "**************************************" );
+//        pw.println("Time " + job.startTime);
+//        pw.println("Event " + job.event);
+//        pw.println("Ongoing Calls "+ ongoingCalls);
+//        pw.println(  "**************************************" );
+          pw.println(job.startTime+" "+job.event+" "+ongoingCalls+" "+handoffDrops * 1.0 / totalHandoffs+" "+guardChannels+ " " + newCallDrops*1.0/totalNewCalls);
+         // pw.println("Event " + job.event);
+         //pw.println("Ongoing Calls "+ ongoingCalls);
+
 
     }
     public void run() {
+        pw.println("job.startTime job.event ongoingCalls handoffDropPercent guardCells newCallDrop% ");
         ongoingCalls = 1;
         double t =  StdRandom.exp(callArrivalRate);
         Control.addJob(new Job(this.id,Event.CONNECT,t));
@@ -250,6 +267,8 @@ public class BSC implements Runnable {
                 }
                 System.out.println( Control.BLUE + this.id + " has started job" + Control.RESET);
                 print();
+                if(job.startTime-lastReset>= 1000)
+                    reset();
                 if (job.event == Event.HANDOFF)
                     handoff();
                 else if (job.event == Event.CONNECT)

@@ -1,5 +1,10 @@
 import com.sun.org.apache.regexp.internal.RE;
 import com.sun.tools.doclets.formats.html.SourceToHTMLConverter;
+/*
+    Random Factor prevalence:
+    If a cell needs to generate a handoff, it must check its neightbours for their current status, and not start the handoff process if any neighbour is busy.
+    This perfection may not be desired, owing to random chances and the time difference is too small to care.
+ */
 
 import java.util.ArrayList;
 
@@ -19,7 +24,7 @@ public class Control extends Thread{
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
     static double time = 0;
-    static double totalSim = 720;
+    static double totalSim = 17200;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;

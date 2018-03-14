@@ -1,5 +1,6 @@
 package Mobility;
 
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -68,12 +69,26 @@ public class Control {
                 maxX =  c.centreX + c.radius;
         }
         for(int i = 0;i<2000;i++){
-            Control.hosts.add(new Host(maxX,maxY));
+            Control.hosts.add(new Host(i,maxX,maxY));
         }
-        while(Control.time<10000){
+        while(Control.time<20000){
             for(Host h:Control.hosts)
                 h.update(1);
             Control.time+=1;
+        }
+        for(int i = 0;i<9;i++) {
+            Host h = Control.hosts.get(i);
+            ArrayList<Host.Pair> a = h.pairs;
+            try {
+                FileWriter fw = new FileWriter(h.id+"abc.txt");
+                for (Host.Pair p : a) {
+                    fw.write(p.x + "," + p.y + "\n");
+                }
+                fw.close();
+                fw.flush();
+            } catch (Exception e) {
+                System.out.println("hah");
+            }
         }
         System.out.println("DONE");
     }

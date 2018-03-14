@@ -1,5 +1,6 @@
 package Mobility;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Host {
@@ -7,6 +8,7 @@ public class Host {
     double velocity;
     double direction;
     int cell;
+    int id;
     double x;
     double y;
     double dx;
@@ -17,13 +19,24 @@ public class Host {
     double rangeX;
     double rangeY;
     boolean isMoving;
-    public Host(double rx,double ry) {
+    ArrayList<Pair> pairs;
+    class Pair{
+        double x;
+        double y;
+        Pair(double x, double y){
+            this.x = x;
+            this.y = y;
+        }
+    }
+    public Host(int i,double rx,double ry) {
         rangeX = rx;
         rangeY = ry;
         time = 0.0;
+        id = i;
         setStartPosition();
         setCell();
         randomDecide();
+        pairs = new ArrayList<>();
 
     }
     public void randomDecide(){
@@ -95,7 +108,8 @@ public class Host {
                 randomDecide();
                 update(dt); //scope for tail call elimination
             }
-//            else if(waitFor>=0) //already reduced waitfor
+
+            //            else if(waitFor>=0) //already reduced waitfor
 //            return;
         }
         else if(isMoving){
@@ -112,5 +126,6 @@ public class Host {
                // return;
 
         }
+        pairs.add(new Pair(x,y));
     }
 }

@@ -1,4 +1,3 @@
-package PACKAGE_NAME;
-
 public enum Priority {
+    REALTIME, STREAMING,BACKGROUND;
 }

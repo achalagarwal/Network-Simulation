@@ -386,13 +386,13 @@ public class Cell implements  Runnable {
         }
     }
     public void print(){
-
-        System.out.println(  "**************************************" );
+    if(this.cellId==0) {
+        System.out.println("**************************************");
         System.out.println("Time " + data.currentTime);
         System.out.println("Event " + data.currentEvent);
-        System.out.println("Ongoing Calls "+ ongoingCalls);
-        System.out.println("Handoff Call drops " + handoffDrops );
-
+        System.out.println("Ongoing Calls " + ongoingCalls);
+        System.out.println("Handoff Call drops " + handoffDrops);
+    }
     }
     public void run() {
         ongoingCalls = 1; //initial

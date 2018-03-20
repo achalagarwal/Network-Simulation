@@ -5,13 +5,17 @@ import java.util.Random;
 
 public class BSC implements Runnable {
     Job job;
+    //stats
     int totalChannels;
-    int guardChannels;
+    int guard1Channels;
+    int guard2Channels;
+    int guard3Channels;
     int handoffDrops;
     int ongoingCalls;
     int totalHandoffs;
     int totalNewCalls;
     int newCallDrops;
+    //parameters
     double handoffThreshold;
     double callArrivalRate;
     double callTerminationRate;
@@ -23,6 +27,7 @@ public class BSC implements Runnable {
     int consecutiveHandoffsLimit;
     double alpha1;
     double alpha2;
+    //controls
     double lastReset;
     int periodHandoffs;
     int periodHandoffDrops;
@@ -36,7 +41,9 @@ public class BSC implements Runnable {
         }
         consecutiveHandoffsLimit = 6;
         consecutiveHandoffs = 0;
-        guardChannels = 0;
+        guard1Channels = 0;
+        guard2Channels = 0;
+        guard3Channels = 0;
         ongoingCalls = 0;
         totalChannels = 150;
         handoffDrops = 0;
@@ -178,6 +185,7 @@ public class BSC implements Runnable {
         else{
             double t = job.startTime + StdRandom.exp(callTerminationRate);
             Control.addJob(new Job(this.id, Event.DISCONNECT, t));
+            Control.removeFromHList(id);
         }
     }
     public void connect() {

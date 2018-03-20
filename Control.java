@@ -1,5 +1,8 @@
 import com.sun.org.apache.regexp.internal.RE;
 import com.sun.tools.doclets.formats.html.SourceToHTMLConverter;
+import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.XYChart;
 /*
     Random Factor prevalence:
     If a cell needs to generate a handoff, it must check its neightbours for their current status, and not start the handoff process if any neighbour is busy.
@@ -24,7 +27,7 @@ public class Control extends Thread{
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
     static double time = 0;
-    static double totalSim = 17200;
+    static double totalSim = 1720;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;
@@ -113,7 +116,12 @@ public class Control extends Thread{
             }
         }
 
-
+        for(int i = 0;i<19;i++) {
+            double[] xData = new double[]{0.0D, 1.0D, 2.0D};
+            double[] yData = new double[]{2.0D, 1.0D, 0.0D};
+            XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
+            (new SwingWrapper(chart)).displayChart();
+        }
 
         for(int i = 0;i<19;i++){
             BSC c = BSC_Control.getBSC(i);

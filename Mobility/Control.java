@@ -71,7 +71,7 @@ public class Control {
         for(int i = 0;i<2000;i++){
             Control.hosts.add(new Host(i,maxX,maxY));
         }
-        while(Control.time<20000){
+        while(Control.time<10000){
             for(Host h:Control.hosts)
                 h.update(1);
             Control.time+=1;
@@ -89,6 +89,10 @@ public class Control {
             } catch (Exception e) {
                 System.out.println("hah");
             }
+        }
+        for(int i = 0;i<Control.cells.size();i++){
+            Cell c = Control.cells.get(i);
+            System.out.println("handover rate from Cell "+ c.id+ " is " + c.handovers );
         }
         System.out.println("DONE");
     }

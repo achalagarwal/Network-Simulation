@@ -13,6 +13,7 @@ public class Cell {
         centreY = y;
         radius = r;
         this.id = id;
+        this.handovers = 0;
     }
     public void handover(){
         handovers ++;

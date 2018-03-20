@@ -59,11 +59,11 @@ public class Host {
         moveFor = distance/velocity;
     }
     public void setVelocity(){
-        velocity = new Random().nextDouble()*100;
+        velocity = new Random().nextDouble()*200;
 
     }
     public void setDistance(){
-        distance = new Random().nextDouble()*100;
+        distance = new Random().nextDouble()*1000;
     }
     public void setWaitTime(){
         waitFor = new Random().nextDouble()*100;

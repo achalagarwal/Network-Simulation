@@ -1,4 +1,6 @@
 
+import javafx.scene.chart.XYChart;
+import org.knowm.xchart.QuickChart;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Random;
@@ -55,6 +57,8 @@ public class BSC implements Runnable {
         callArrivalRate = new double[3];
         this.id = id;
         lastReset = 0.0;
+         periodHandoffs = new int[3];
+         periodHandoffDrops = new int[3];
         setNeighbours();
     }
     public synchronized void turnOn(){
@@ -303,7 +307,12 @@ public class BSC implements Runnable {
 
     }
     public void initParams(){
-
+        consecutiveHandoffsLimit = new int[]{7, 5, 3}; //set values
+        probabilities = new double[][]{{0.3,0.4,0.5},{0.1,0.3,0.4},{0.0,0.1,0.2}};
+        handoffThreshold = new double[]{0.01,0.05,0.2};
+        callTerminationRate = new double[]{0.3,0.25,0.05};
+        handoffRate = new double[]{0.03,0.05,0.001};
+        callArrivalRate = new double[]{0.5,0.3,0.2};
     }
     public void initJobs(){
         Priority p;
@@ -323,7 +332,14 @@ public class BSC implements Runnable {
             Control.addJob(new Job(this.id, Event.HANDOFF, t,p));
         }
     }
+    public void plot(){
+
+    }
     public void run() {
+        double [][]initdata = new double[2][];
+         org.knowm.xchart.XYChart chart = null;
+        if(this.id == 0)
+         chart = QuickChart.getChart("Simple XChart Real-time Demo", "Radians", "Sine", "sine", initdata[0], initdata[1]);
         pw.println("job.startTime job.event ongoingCalls handoffDropPercent guardCells newCallDrop% ");
         initParams();
         initJobs();
@@ -353,6 +369,11 @@ public class BSC implements Runnable {
                 else if(job.event == Event.TERMINATE)
                     break;
                 job = null;
+//                if(id==0) {
+//                    initdata[0][0] = guardChannels[0];
+//                    initdata[1][1] = job.startTime;
+//                   // chart.updateXYSeries("sine",initdata[1],initdata[0]);
+//                }
                 System.out.println(this.id + " has ended job");
                 this.notifyAll();
             }

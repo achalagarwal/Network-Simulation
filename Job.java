@@ -5,6 +5,7 @@ public class Job {
     double endTime;
     int cell;
     Priority priority;
+    @Deprecated
     Job(int cell, Event event, double startTime){
         this.cell = cell;
         this.event = event;
@@ -19,11 +20,11 @@ public class Job {
         this.endTime = end;
         generatePriority();
     }
-    Job(int cell,Event event, double start, double end, Priority p){
+    Job(int cell,Event event, double start, Priority p){
         this.cell = cell;
         this.event = event;
         this.startTime = start;
-        this.endTime = end;
+        this.endTime = -1;
         this.priority = p;
     }
     public void generatePriority(){

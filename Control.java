@@ -27,7 +27,7 @@ public class Control extends Thread{
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
     static double time = 0;
-    static double totalSim = 1720;
+    static double totalSim = 172000;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;
@@ -116,17 +116,11 @@ public class Control extends Thread{
             }
         }
 
-        for(int i = 0;i<19;i++) {
-            double[] xData = new double[]{0.0D, 1.0D, 2.0D};
-            double[] yData = new double[]{2.0D, 1.0D, 0.0D};
-            XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
-            (new SwingWrapper(chart)).displayChart();
-        }
 
-        for(int i = 0;i<19;i++){
+        for(int i = 0;i<19;i++) {
             BSC c = BSC_Control.getBSC(i);
             synchronized (c) {
-                c.job = new Job(i,Event.TERMINATE,time);
+                c.job = new Job(i, Event.TERMINATE, time);
                 System.out.println("Terminate command sent");
                 c.notifyAll();
             }

@@ -1,6 +1,8 @@
 
 import javafx.scene.chart.XYChart;
 import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.SwingWrapper;
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Random;
@@ -8,6 +10,9 @@ import java.util.Random;
 public class BSC implements Runnable {
     Job job;
     //stats
+    double[][] data;
+    int counter =0;
+    org.knowm.xchart.XYChart chart;
     int totalChannels;
     int guardChannels[];
     int handoffDrops[];
@@ -24,6 +29,8 @@ public class BSC implements Runnable {
     boolean status;
     int[] neighbours;
     int id;
+    SwingWrapper<org.knowm.xchart.XYChart> sw;
+
     int consecutiveHandoffs[];
     int consecutiveHandoffsLimit[];
     double alpha1[];
@@ -40,12 +47,17 @@ public class BSC implements Runnable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        data = new double[2][10000];
+        for(int i = 0;i<2;i++)
+            for(int j = 0;j<10000;j++)
+                data[i][j] =0;
+
         consecutiveHandoffsLimit = new int[3]; //set values
         consecutiveHandoffs = new int[3];
         probabilities = new double[3][3];
         guardChannels = new int[3];
         ongoingCalls = new int[3];
-        totalChannels = 150;
+        totalChannels = 500;
         handoffDrops = new int[3];
         totalHandoffs = new int[3];
         totalNewCalls = new int[3];
@@ -152,7 +164,7 @@ public class BSC implements Runnable {
         else //you should try new call of same priority try (counter intuitive)
             return false;
     }
-    public void handin(int cell, int flag){//shift the remove from hlist to caller and use only flag as parameter?
+    public void handin(int cell, int flag, double t){//shift the remove from hlist to caller and use only flag as parameter?
         totalHandoffs[flag]++;
         periodHandoffs[flag]++;
         //pw.println(" New handoff connection request received from Cell Number - " + cell);
@@ -162,19 +174,28 @@ public class BSC implements Runnable {
         if (!checkHandin(flag)) {
             periodHandoffDrops[flag]++;//here present ratio does not use the currently dropped handoff, reconfirm
             handoffDrops[flag]++;
-            if (presentRatio >= 0.5*handoffThreshold[flag]) { //include alpha1
+            presentRatio = periodHandoffDrops[flag] * 1.0 / periodHandoffs[flag];
+            if (presentRatio >= 0.2*handoffThreshold[flag]) { //include alpha1
                 incrementGuardChannel(flag);
             }
             consecutiveHandoffs[flag] = 0;
         }
-        else if (ongoingCalls[flag] < totalChannels) { //update algo
-
+        else{// if (ongoingCalls[flag] < totalChannels)  //update algo
+            presentRatio = periodHandoffDrops[flag] * 1.0 / periodHandoffs[flag];
             consecutiveHandoffs[flag]++;
-            if (presentRatio <= 0.3*handoffThreshold[flag] && consecutiveHandoffs[flag] == consecutiveHandoffsLimit[flag] - 1) //include alpha2
+            if (presentRatio <= 0.5*handoffThreshold[flag] && consecutiveHandoffs[flag] == consecutiveHandoffsLimit[flag] - 1) //include alpha2
                 decrementGuardChannel(flag);
             ongoingCalls[flag]++;
         }
         Control.removeFromHList(cell);
+        if(this.id == 0) {
+            data[0][counter] = guardChannels[0];
+            data[1][counter++] = t;
+            chart();
+        }
+        if(this.id ==0)
+        pw.println(t+" "+"HAND-IN"+" "+ongoingCalls[0]+" "+ongoingCalls[1]+" "+ongoingCalls[2]+" "+handoffDrops[0]+" "+handoffDrops[0]+" "+handoffDrops[1]+" "+handoffDrops[2]+" "+guardChannels[0]+" "+guardChannels[1]+" "+guardChannels[2]+" "+newCallDrops[0]+" "+newCallDrops[1]+ " " + newCallDrops[2]);
+
     }
     public void handoff() {
         int flag;
@@ -196,7 +217,7 @@ public class BSC implements Runnable {
                 if (neighbours.length > 0) {
                     int random = new Random().nextInt(neighbours.length);
                     //pw.println("Handoff Call sent to Cell Number - " + neighbours[random]);
-                    BSC_Control.getBSC(neighbours[random]).handin(this.id,flag);
+                    BSC_Control.getBSC(neighbours[random]).handin(this.id,flag,job.startTime);
                 }
             } else { //should never reach this line
                 //pw.println("No calls to Handoff");
@@ -211,14 +232,18 @@ public class BSC implements Runnable {
         public boolean newCallCheck(int flag){
             if(totalChannels - getTotalGuardChannels() > getTotalOngoingCalls())
                 return true;
-            else{
+            else if(totalChannels - getTotalOngoingCalls()>0){
                 double r = new Random().nextDouble();
                 for(int i = 0;i<3;i++){
-                    if(r<probabilities[flag][i])
+                    if(r<probabilities[flag][i]) {
+                        if(checkHandin(i))
                         return true;
+                    }
                 }
                 return false;
             }
+            else
+                return false;
         }
     public void connect() {
 
@@ -286,6 +311,8 @@ public class BSC implements Runnable {
         }
     }
     public void reset(){
+        pw.println("job.startTime  job.event  job.priority  ongoingCalls[0]   ongoingCalls[1]   ongoingCalls[2]  handoffDrops[0]   handoffDrops[0]    handoffDrops[1]   handoffDrops[2]    guardChannels[0]    guardChannels[1   guardChannels[2]         newCallDrops[0]+      newCallDrops[1]+ newCallDrops[2]");
+
         lastReset = job.startTime;
         for(int i = 0;i<3;i++) {
             periodHandoffs[i] = 0;
@@ -300,19 +327,19 @@ public class BSC implements Runnable {
 //        pw.println("Ongoing Calls "+ ongoingCalls);
 //        pw.println(  "**************************************" );
             if(this.id == 0)
-          pw.println(job.startTime+" "+job.event+" "+ongoingCalls[0]+" "+handoffDrops[0] * 1.0 / totalHandoffs[0]+" "+guardChannels[0]+ " " + newCallDrops[0]*1.0/totalNewCalls[0]);
+          pw.println(job.startTime+" "+job.event+" "+ongoingCalls[0]+" "+ongoingCalls[1]+" "+ongoingCalls[2]+" "+handoffDrops[0]+" "+handoffDrops[0]+" "+handoffDrops[1]+" "+handoffDrops[2]+" "+guardChannels[0]+" "+guardChannels[1]+" "+guardChannels[2]+" "+newCallDrops[0]+" "+newCallDrops[1]+ " " + newCallDrops[2]);
          // pw.println("Event " + job.event);
          //pw.println("Ongoing Calls "+ ongoingCalls);
 
 
     }
     public void initParams(){
-        consecutiveHandoffsLimit = new int[]{7, 5, 3}; //set values
-        probabilities = new double[][]{{0.3,0.4,0.5},{0.1,0.3,0.4},{0.0,0.1,0.2}};
-        handoffThreshold = new double[]{0.01,0.05,0.2};
-        callTerminationRate = new double[]{0.3,0.25,0.05};
-        handoffRate = new double[]{0.03,0.05,0.001};
-        callArrivalRate = new double[]{0.5,0.3,0.2};
+        consecutiveHandoffsLimit = new int[]{4, 4, 4}; //set values
+        probabilities = new double[][]{{0.2,0.3,0.4},{0.0,0.2,0.3},{0.0,0.0,0.0}};
+        handoffThreshold = new double[]{1,1,1};
+        callTerminationRate = new double[]{0.3,0.1,0.05};
+        handoffRate = new double[]{0.3,0.003,0.001};
+        callArrivalRate = new double[]{0.5,0.2,0.1};
     }
     public void initJobs(){
         Priority p;
@@ -332,15 +359,20 @@ public class BSC implements Runnable {
             Control.addJob(new Job(this.id, Event.HANDOFF, t,p));
         }
     }
-    public void plot(){
-
+    public void chart(){
+        if(counter == 1) {
+            chart = QuickChart.getChart("Simple XChart Real-time Demo", "Time", "Guard Channels for Real Time", "graph", data[1], data[0]);
+            sw = new SwingWrapper(chart);
+            sw.displayChart();
+        }
+        else {
+            chart.updateXYSeries("graph", data[1], data[0], (double[]) null);
+            sw.repaintChart();
+        }
     }
     public void run() {
-        double [][]initdata = new double[2][];
-         org.knowm.xchart.XYChart chart = null;
-        if(this.id == 0)
-         chart = QuickChart.getChart("Simple XChart Real-time Demo", "Radians", "Sine", "sine", initdata[0], initdata[1]);
-        pw.println("job.startTime job.event ongoingCalls handoffDropPercent guardCells newCallDrop% ");
+       // pw.println("job.startTime job.event ongoingCalls handoffDropPercent guardCells newCallDrop% ");
+        pw.println("job.startTime  job.event  ongoingCalls[0]   ongoingCalls[1]   ongoingCalls[2]  handoffDrops[0]   handoffDrops[0]    handoffDrops[1]   handoffDrops[2]    guardChannels[0]    guardChannels[1   guardChannels[2]         newCallDrops[0]+      newCallDrops[1]+ newCallDrops[2]");
         initParams();
         initJobs();
         while (true) {
@@ -366,8 +398,9 @@ public class BSC implements Runnable {
                     connect();
                 else if (job.event == Event.DISCONNECT)
                     disconnect();
-                else if(job.event == Event.TERMINATE)
+                else if(job.event == Event.TERMINATE) {
                     break;
+                }
                 job = null;
 //                if(id==0) {
 //                    initdata[0][0] = guardChannels[0];

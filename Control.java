@@ -27,7 +27,7 @@ public class Control extends Thread{
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
     static double time = 0;
-    static double totalSim = 172000;
+    static double totalSim = 200000000;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;
@@ -56,7 +56,7 @@ public class Control extends Thread{
         }
     }
     public static  void removeFromHList(int BSC){
-        System.out.println(YELLOW + "Removed "+ BSC + " from H List"+RESET);
+        // printer System.out.println(YELLOW + "Removed "+ BSC + " from H List"+RESET);
         synchronized (hList) {
             hList.remove(new Integer(BSC));
             hList.notifyAll();
@@ -65,7 +65,7 @@ public class Control extends Thread{
     public static boolean waitForHandoff(int BSC) {
         for (Integer i : hList) {
             if (BSC_Control.getBSC(i).hasNeighbour(BSC)) {
-                System.out.println(RED+BSC+ " waiting for neighbour cell " + i+RESET);
+                // printer System.out.println(RED+BSC+ " waiting for neighbour cell " + i+RESET);
                 return true;
             }
         }
@@ -73,6 +73,7 @@ public class Control extends Thread{
     }
 
     public void run(){
+        double printer = 0;
         while(time<totalSim) {
             Job j = getJob();
             if(j!=null){
@@ -81,39 +82,44 @@ public class Control extends Thread{
 
                     while (c.job!=null) {
                         try {
-                            System.out.println("Waiting for cell  "+ j.cell +" to finish pending job");
+                            // printer System.out.println("Waiting for cell  "+ j.cell +" to finish pending job");
                             c.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                    System.out.println("Cell  "+ j.cell +" finished pending job, now can be offered new job");
+                    // printer System.out.println("Cell  "+ j.cell +" finished pending job, now can be offered new job");
                 synchronized (hList) {
                     while (waitForHandoff(j.cell)) {
                         try {
-                            System.out.println( j.cell+" waiting for neighbours");
+                            // printer System.out.println( j.cell+" waiting for neighbours");
                             hList.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        //System.out.println("hi");
+                        //// printer System.out.println("hi");
                     }
-                    System.out.println( j.cell+" has finished waiting for neighbours");
+                    // printer System.out.println( j.cell+" has finished waiting for neighbours");
                     if (j.event == Event.HANDOFF) {
-                        System.out.println(YELLOW+  j.cell+ " has entered the H List" + RESET);
+                        // printer System.out.println(YELLOW+  j.cell+ " has entered the H List" + RESET);
                         hList.add(new Integer(j.cell));
                     }
                     hList.notifyAll();
                 }
                     c.job  = j;
-                    System.out.println(BLUE + "Job given to "+ j.cell + RESET);
+                    // printer System.out.println(BLUE + "Job given to "+ j.cell + RESET);
                     time = j.startTime;
                     removeJob(j);
                     c.notifyAll();
                 }
-               // System.out.println(jobs.size());
+               // // printer System.out.println(jobs.size());
 
             }
+            if(time - printer > 100000) {
+                System.out.println(String.format("%.2f",time*1.0/2000000) +"%");
+                printer = time;
+            }
+
         }
 
 
@@ -121,11 +127,11 @@ public class Control extends Thread{
             BSC c = BSC_Control.getBSC(i);
             synchronized (c) {
                 c.job = new Job(i, Event.TERMINATE, time);
-                System.out.println("Terminate command sent");
+                // printer System.out.println("Terminate command sent");
                 c.notifyAll();
             }
 
         }
-        System.out.println("Hii");
+        // printer System.out.println("Hii");
     }
 }

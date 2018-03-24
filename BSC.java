@@ -7,6 +7,8 @@ import org.knowm.xchart.SwingWrapper;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class BSC implements Runnable {
@@ -14,7 +16,7 @@ public class BSC implements Runnable {
     //stats
     double[][] data;
     int counter[];
-    org.knowm.xchart.XYChart chart[] = new org.knowm.xchart.XYChart[3];
+    org.knowm.xchart.XYChart chart[] = new org.knowm.xchart.XYChart[6];
     int totalChannels;
     int guardChannels[];
     int handoffDrops[];
@@ -31,7 +33,7 @@ public class BSC implements Runnable {
     boolean status;
     int[] neighbours;
     int id;
-    SwingWrapper<org.knowm.xchart.XYChart> sw[] = new SwingWrapper[3];
+    SwingWrapper<org.knowm.xchart.XYChart> sw[] = new SwingWrapper[6];
 
     int consecutiveHandoffs[];
     int consecutiveHandoffsLimit[];
@@ -50,19 +52,24 @@ public class BSC implements Runnable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         if(id==0) {
-            data = new double[6][10000000];
-            for (int i = 0; i < 6; i++)
-                for (int j = 0; j < 10000000; j++)
-                    data[i][j] = 0;
+
+            data = new double[12][20000000]; //change this range in handin also
+//            for (int i = 0; i < 6; i++)
+//                for (int j = 0; j < 10000000; j++)
+//                    data[i][j] = 0;
         }
-        counter = new int[3];
+
+        counter = new int[12];
+        for(int i =0;i<12;i++)
+            counter[i] = 0;
         consecutiveHandoffsLimit = new int[3]; //set values
         consecutiveHandoffs = new int[3];
         probabilities = new double[3][3];
         guardChannels = new int[3];
         ongoingCalls = new int[3];
-        totalChannels = 500;
+        totalChannels = 3000;
         handoffDrops = new int[3];
         totalHandoffs = new int[3];
         totalNewCalls = new int[3];
@@ -218,12 +225,22 @@ public class BSC implements Runnable {
             ongoingCalls[flag]++;
         }
         Control.removeFromHList(cell);
-        if (this.id == 0 && counter[flag]<10000000) {
-            data[flag * 2][counter[flag]] = guardChannels[flag];
-            data[flag * 2 + 1][counter[flag]++] = t;
-         //   chart(flag);
+        if (this.id == 0 ) {
+            if(counter[flag]<20000000) {
+                data[flag * 2][counter[flag*2]] = guardChannels[flag];
+                data[flag * 2 + 1][counter[flag*2+1]] = t;
+                data[6 + flag * 2][counter[6+flag*2]] = presentRatio * 100.0;
+                data[6 + flag * 2 + 1][counter[6+flag*2+1]] = t;
+                counter[2*flag]++;
+                counter[flag*2 +1]++;
+                counter[6 + flag*2]++;
+                counter[6 + flag*2+1]++;
+                //   chart(flag);
+            }
+            else
+                System.out.println("Data Array insufficient");
         }
-        if (this.id == 0)
+        if (this.id == -1)
             pw.println(t + " " + "HAND-IN" + " " + ongoingCalls[0] + " " + ongoingCalls[1] + " " + ongoingCalls[2] + " " + " " + handoffDrops[0] + " " + handoffDrops[1] + " " + handoffDrops[2] + " " + guardChannels[0] + " " + guardChannels[1] + " " + guardChannels[2] + " " + newCallDrops[0] + " " + newCallDrops[1] + " " + newCallDrops[2]);
 
     }
@@ -263,19 +280,21 @@ public class BSC implements Runnable {
     }
 
     public boolean newCallCheck(int flag) {
+
         if (totalChannels - getTotalGuardChannels() > getTotalOngoingCalls())
             return true;
-        else if (totalChannels - getTotalOngoingCalls() > 0) {
+        else{
             double r = new Random().nextDouble();
-            for (int i = 0; i < 3; i++) {
-                if (r < probabilities[flag][i]) {
-                    if (checkHandin(i))
+            for(int i = 0;i<3;i++) {
+                if (guardChannels[i] - ongoingCalls[i]>0){
+                    if (r < probabilities[flag][i]) {
+                        ongoingCalls[i]++;
                         return true;
+                    }
                 }
             }
-            return false;
-        } else
-            return false;
+        }
+        return false;
     }
 
     public void connect() {
@@ -376,10 +395,10 @@ public class BSC implements Runnable {
     public void initParams() {
         consecutiveHandoffsLimit = new int[]{6, 4, 2}; //set values
         probabilities = new double[][]{{0.05, 0.2, 0.4}, {0.0, 0.05, 0.2}, {0.0, 0.0, 0.05}};
-        handoffThreshold = new double[]{0.3, 0.6, 0.8};
-        callTerminationRate = new double[]{0.2, 0.1, 0.05};
-        handoffRate = new double[]{0.1, 0.1, 0.1};
-        callArrivalRate = new double[]{0.5, 0.5, 0.5};
+        handoffThreshold = new double[]{0.002, 0.05, 0.5};
+        callTerminationRate = new double[]{0.005, 0.1, 0.005};
+        handoffRate = new double[]{0.01, 0.05, 0.1};
+        callArrivalRate = new double[]{0.5, 0.3, 0.3};
     }
 
     public void initJobs() {
@@ -431,9 +450,11 @@ public class BSC implements Runnable {
                     }
                 }
                 // printer System.out.println(Control.BLUE + this.id + " has started job" + Control.RESET);
-                print0();
-                if (job.startTime - lastReset >= 10000)
-                    reset(0);
+                //print0();
+                if (job.startTime - lastReset >= 25000) {
+                    reset(1);
+                    print0();
+                }
                 if (job.event == Event.HANDOFF)
                     handoff();
                 else if (job.event == Event.CONNECT)
@@ -456,10 +477,21 @@ public class BSC implements Runnable {
         pw.flush();
         pw.close();
         if (id == 0) {
-            for (int i = 0; i < 3; i++) {
-                chart[i] = QuickChart.getChart("Guard Channels wrt Time", "Time", "Guard Channels of Priority" + i, "graph", data[2 * i + 1], data[2 * i]);
-                sw[i] = new SwingWrapper(chart[i]);
+        double tempData[][] = new double[12][];
+
+        for(int i =0;i<12;i++){
+            //tempData[i] = new double[counter[i]];
+            if(counter[i]== 20000000)
+                System.out.println("Overflow of data in "+i);
+            tempData[i] = Arrays.copyOf(data[i],counter[i]);
+        }
+
+            for (int i = 0; i < 6; i++) {
+                chart[i] = QuickChart.getChart("Chart " + i, "Time", "Data" + i, "graph" + i, tempData[2 * i + 1], tempData[2 * i]);
+                //sw[i] = new SwingWrapper(chart[i]);
                 //sw[i].displayChart();
+            }
+            for (int i = 0; i < 6; i++) {
                 try {
                     // BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
                     BitmapEncoder.saveBitmapWithDPI(chart[i], "./Sample_Chart_300_DPI" + i, BitmapEncoder.BitmapFormat.PNG, 600);
@@ -467,8 +499,20 @@ public class BSC implements Runnable {
                     e.printStackTrace();
                 }
             }
+            /*
+            double[] xData = new double[] { 0.0, 1.0, 2.0 };
+            double[] yData = new double[] { 2.0, 1.0, 0.0 };
 
+            // Create Chart
+            org.knowm.xchart.XYChart charts = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
+            try {
+                // BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
+                BitmapEncoder.saveBitmapWithDPI(charts, "./SSSS", BitmapEncoder.BitmapFormat.PNG, 600);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            */
         }
     }
 }
-
+//print metadata

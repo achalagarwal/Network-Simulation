@@ -44,6 +44,8 @@ public class BSC implements Runnable {
     double lastReset;
     int periodHandoffs[];
     int periodHandoffDrops[];
+    int periodNewCalls[];
+    int periodNewCallDrops[];
     PrintWriter pw;
 
     BSC(int id) {
@@ -56,7 +58,7 @@ public class BSC implements Runnable {
 
         if(id==0) {
 
-            data = new double[14][10000000]; //change this range in handin also 20000000
+            data = new double[14][10000]; //change this range in handin also 20000000
 //            for (int i = 0; i < 6; i++)
 //                for (int j = 0; j < 10000000; j++)
 //                    data[i][j] = 0;
@@ -74,7 +76,7 @@ public class BSC implements Runnable {
         probabilities = new double[3][3];
         guardChannels = new int[3];
         ongoingCalls = new int[3];
-        totalChannels = 3000;
+        totalChannels = 30000;
         handoffDrops = new int[3];
         totalHandoffs = new int[3];
         totalNewCalls = new int[3];
@@ -88,6 +90,8 @@ public class BSC implements Runnable {
         lastReset = 0.0;
         periodHandoffs = new int[3];
         periodHandoffDrops = new int[3];
+        periodNewCalls = new int[3];
+        periodNewCallDrops = new int[3];
         setNeighbours();
     }
 
@@ -316,6 +320,7 @@ public class BSC implements Runnable {
         else  //if(job.priority == Priority.BACKGROUND)
             flag = 2;
         totalNewCalls[flag]++;
+        periodNewCalls[flag]++;
         double t = job.startTime + StdRandom.exp(callArrivalRate[flag]);
         Control.addJob(new Job(this.id, Event.CONNECT, t, job.priority));
         if (newCallCheck(flag)) {// total - guard = Ca
@@ -330,15 +335,16 @@ public class BSC implements Runnable {
 
         } else {
             newCallDrops[flag]++;
+            periodNewCallDrops[flag]++;
             //print();
             //  pw.println("New Connection Failed in " + Thread.currentThread().getName());
 
         }
         if (this.id == 0  && flag==0) {
-            if(check[3] == 10) {
+            if(check[3] == 20) {
                 check[3] = 0;
                 if (counter[12] < 10000000 && counter[13] < 10000000) {
-                    data[12][counter[12]++] = newCallDrops[0] * 100.0 / totalNewCalls[0];
+                    data[12][counter[12]++] = ongoingCalls[1];
                     data[13][counter[13]++] = t;
                 }
             }
@@ -391,6 +397,8 @@ public class BSC implements Runnable {
         if(flag == 1) {
             lastReset = job.startTime;
             for (int i = 0; i < 3; i++) {
+                periodNewCalls[i] = 0;
+                periodNewCallDrops[i] = 0;
                 periodHandoffs[i] = 0;
                 periodHandoffDrops[i] = 0;
             }
@@ -414,11 +422,11 @@ public class BSC implements Runnable {
 
     public void initParams() {
         consecutiveHandoffsLimit = new int[]{6, 4, 2}; //set values
-        probabilities = new double[][]{{0.05, 0.2, 0.4}, {0.0, 0.05, 0.2}, {0.0, 0.0, 0.05}};
-        handoffThreshold = new double[]{0.002, 0.05, 0.5};
-        callTerminationRate = new double[]{0.005, 0.1, 0.005};
-        handoffRate = new double[]{0.01, 0.05, 0.1};
-        callArrivalRate = new double[]{0.5, 0.3, 0.3};
+        probabilities = new double[][]{{0.05, 0.5, 0.8}, {0.0, 0.05, 0.2}, {0.0, 0.0, 0.05}};
+        handoffThreshold = new double[]{0.001, 0.01, 0.5};
+        callTerminationRate = new double[]{0.5, 0.3, 0.1};
+        handoffRate = new double[]{0.01, 0.01, 0.01};
+        callArrivalRate = new double[]{0.5, 0.5, 0.5};
     }
 
     public void initJobs() {
@@ -471,7 +479,7 @@ public class BSC implements Runnable {
                 }
                 // printer System.out.println(Control.BLUE + this.id + " has started job" + Control.RESET);
                // print0();
-                if (job.startTime - lastReset >= 25000) {
+                if (job.startTime - lastReset >= 2500) {
                     reset(1);
                     print0();
                 }

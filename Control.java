@@ -27,7 +27,7 @@ public class Control extends Thread{
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
     static double time = 0;
-    static double totalSim = 200000000;//20000000;
+    static double totalSim = 500000000;//20000000500000000;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;

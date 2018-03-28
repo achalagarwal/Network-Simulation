@@ -10,13 +10,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Random;
 class Channel{
     boolean vacant;
     Priority p;
     Channel(){
         this.vacant = true;
-        p = null;
+        p = Priority.BACKGROUND;
     }}
 
 public class BSC implements Runnable {
@@ -29,6 +30,7 @@ public class BSC implements Runnable {
     int check[];
     org.knowm.xchart.XYChart chart[] = new org.knowm.xchart.XYChart[7];
     int totalChannels;
+    int simNumber;
     int guardChannels[];
     int handoffDrops[];
     int ongoingCalls[];
@@ -60,16 +62,17 @@ public class BSC implements Runnable {
     PrintWriter pw;
 
     BSC(int id) {
-
+/*
         try {
             pw = new PrintWriter("./" + "log_" + Integer.toString(id) + ".txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        */
 
-        if(id==0) {
+        if (id == 0) {
 
-            data = new double[14][10000]; //change this range in handin also 20000000
+            data = new double[14][5000000]; //change this range in handin also 20000000
 //            for (int i = 0; i < 6; i++)
 //                for (int j = 0; j < 10000000; j++)
 //                    data[i][j] = 0;
@@ -89,13 +92,13 @@ public class BSC implements Runnable {
         guardChannels = new int[3];
         ongoingCalls = new int[3];
         occupiedGuardCells = new int[3];
-        totalChannels = 2000;
-        channels= new ArrayList[4];
-        for(int i = 0;i<4;i++)
+        totalChannels = 3000;
+        channels = new ArrayList[4];
+        for (int i = 0; i < 4; i++)
             channels[i] = new ArrayList<>();
-        for(int i = 0;i<totalChannels;i++)
+        for (int i = 0; i < totalChannels; i++)
             channels[3].add(new Channel());
-        int currentSize =0 ;
+        int currentSize = 0;
         handoffDrops = new int[3];
         totalHandoffs = new int[3];
         totalNewCalls = new int[3];
@@ -195,39 +198,43 @@ public class BSC implements Runnable {
                 return true;
         return false;
     }
+
     @Deprecated
     int getTotalOngoingCalls() {
         return ongoingCalls[0] + ongoingCalls[1] + ongoingCalls[2];
     }
 
 
-    int getCurrentChannelsInUse(){
+    int getCurrentChannelsInUse() {
         int size = 0;
-        for(int i =0;i<4;i++) {
-            size+=getOccupiedChannels(i);
+        for (int i = 0; i < 4; i++) {
+            size += getOccupiedChannels(i);
         }
         return size;
     }
+
     @Deprecated
-    int getTotalOccupied(){
+    int getTotalOccupied() {
         return occupiedGuardCells[0] + occupiedGuardCells[1] + occupiedGuardCells[2];
     }
 
-    int getOccupiedChannels(int flag){
+    int getOccupiedChannels(int flag) {
         int count = 0;
-        for(int i = 0;i<channels[flag].size();i++){
-            if(channels[flag].get(i)!=null)
-            if(!(channels[flag].get(i).vacant))
-                count++;
+        for (int i = 0; i < channels[flag].size(); i++) {
+            if (channels[flag].get(i) != null)
+                if (!(channels[flag].get(i).vacant))
+                    count++;
         }
         return count;
     }
-    int getTotalOccupiedCells(){
+
+    int getTotalOccupiedCells() {
         int count = 0;
-        for(int i = 0;i <3;i++)
-            count+=getOccupiedChannels(i);
+        for (int i = 0; i < 3; i++)
+            count += getOccupiedChannels(i);
         return count;
     }
+
     public boolean addNewHandIn(int flag) {
         Priority p = getPriority(flag);
         int a = getVacantChannel(3);
@@ -244,11 +251,12 @@ public class BSC implements Runnable {
         }
         return false;
     }
+
     @Deprecated
     public boolean checkHandin(int flag) {
-        if(totalChannels-getTotalGuardChannels()-(getTotalOngoingCalls()-getTotalOccupied())>0)
+        if (totalChannels - getTotalGuardChannels() - (getTotalOngoingCalls() - getTotalOccupied()) > 0)
             return true;
-        if(guardChannels[flag]-occupiedGuardCells[flag]>0){
+        if (guardChannels[flag] - occupiedGuardCells[flag] > 0) {
             occupiedGuardCells[flag]++;
             return true;
         }
@@ -303,7 +311,7 @@ public class BSC implements Runnable {
             periodHandoffDrops[flag]++;//here present ratio does not use the currently dropped handoff, reconfirm
             handoffDrops[flag]++;
             presentRatio = periodHandoffDrops[flag] * 1.0 / periodHandoffs[flag];
-            if (presentRatio >=  handoffThreshold[flag]) { //include alpha1
+            if (presentRatio >= handoffThreshold[flag]) { //include alpha1
                 addGuardCell(flag);
             }
             consecutiveHandoffs[flag] = 0;
@@ -315,9 +323,9 @@ public class BSC implements Runnable {
             //ongoingCalls[flag]++;
         }
         Control.removeFromHList(cell);
-        if (this.id == 0 ) {
+        if (this.id == 0) {
             if (check[flag] == 10) {
-                if (counter[flag] < 10000000) {
+                if (counter[flag] < 5000000) {
                     check[flag] = 0;
                     data[flag * 2][counter[flag * 2]] = channels[flag].size();
                     data[flag * 2 + 1][counter[flag * 2 + 1]] = t;
@@ -334,47 +342,53 @@ public class BSC implements Runnable {
             } else
                 check[flag]++;
         }
-        if (this.id == 0) {
-            pw.println(t + "      " + "HANDIN" + "    "+ getPriority(flag));
-            pw.println("OCCUPIED CHANNELS  -> " + getOccupiedChannels(0) + " " + getOccupiedChannels(1) + " " + getOccupiedChannels(2) +" " + getOccupiedChannels(3));
+        if (this.id == -1) {
+            pw.println(t + "      " + "HANDIN" + "    " + getPriority(flag));
+            pw.println("OCCUPIED CHANNELS  -> " + getOccupiedChannels(0) + " " + getOccupiedChannels(1) + " " + getOccupiedChannels(2) + " " + getOccupiedChannels(3));
             pw.println("GUARD CHANNELS -> " + channels[0].size() + " " + channels[1].size() + " " + channels[2].size() + " " + channels[3].size());
+            pw.println("ONGOING CALLS -> " + getOngoingCalls(0) + "  " + getOngoingCalls(1) + "   " + getOngoingCalls(2));
+
             //pw.println("OCCUPIED CHANNELS -> " + occupiedGuardCells[0] + occupiedGuardCells[1] + occupiedGuardCells[2]);
             pw.println("***********************");
         }
     }
+
     @Deprecated
     void removeCall(int flag) {
-        if (occupiedGuardCells[flag] > 0){
+        if (occupiedGuardCells[flag] > 0) {
             occupiedGuardCells[flag]--;
         }
     }
-    Priority getPriority(int flag){
-        if(flag == 0)
+
+    Priority getPriority(int flag) {
+        if (flag == 0)
             return Priority.REALTIME;
-        else if(flag == 1)
+        else if (flag == 1)
             return Priority.STREAMING;
-        else if(flag == 2)
+        else if (flag == 2)
             return Priority.BACKGROUND;
         else
             return null;
     }
-    int getPriority(Priority p){
+
+    int getPriority(Priority p) {
         int flag;
         if (job.priority == Priority.REALTIME)
             flag = 0;
         else if (job.priority == Priority.STREAMING)
             flag = 1;
-        else if(job.priority == Priority.BACKGROUND)
+        else if (job.priority == Priority.BACKGROUND)
             flag = 2;
         else
             flag = -1;
         return flag;
     }
-    boolean freeChannel(int flag){
+
+    boolean freeChannel(int flag) {
         Priority p = getPriority(flag);
-        for(int i = 0;i<3;i++){
-            if(i!=flag){
-                for(Channel c: channels[i]) {
+        for (int i = 0; i < 3; i++) {
+            if (i != flag) {
+                for (Channel c : channels[i]) {
                     if (!c.vacant) {
                         c.p = null;
                         c.vacant = true;
@@ -383,14 +397,14 @@ public class BSC implements Runnable {
                 }
             }
         }
-        for(Channel c:channels[flag]){
+        for (Channel c : channels[flag]) {
             if (!c.vacant) {
                 c.p = null;
                 c.vacant = true;
                 return true;
             }
         }
-        for(Channel c:channels[3]){
+        for (Channel c : channels[3]) {
             if (!c.vacant) {
                 c.p = null;
                 c.vacant = true;
@@ -399,6 +413,7 @@ public class BSC implements Runnable {
         }
         return false;
     }
+
     public void handoff() {
         int flag = getPriority(job.priority);
         double t = job.startTime + StdRandom.exp(handoffRate[flag]);
@@ -413,7 +428,9 @@ public class BSC implements Runnable {
             if (neighbours.length > 0) {
                 int random = new Random().nextInt(neighbours.length);
                 //pw.println("Handoff Call sent to Cell Number - " + neighbours[random]);
-                BSC_Control.getBSC(neighbours[random]).handin(this.id, flag, job.startTime);
+                synchronized (BSC_Control.getBSC(neighbours[random]).channels) {
+                    BSC_Control.getBSC(neighbours[random]).handin(this.id, flag, job.startTime);
+                }
             }
         } else { //should never reach this line as all cells have neighbours
             //pw.println("No calls to Handoff");
@@ -422,38 +439,41 @@ public class BSC implements Runnable {
 //            this.data.nextTermination = totalSimulationTime +1;
         }
     }
+
     @Deprecated
     public int getTotalGuardChannels() {
         return guardChannels[0] + guardChannels[1] + guardChannels[2];
     }
 
-    public int getTotalGuardCells(){
+    public int getTotalGuardCells() {
         int count = 0;
-        for(int i = 0;i<3;i++)
-            count+=channels[i].size();
+        for (int i = 0; i < 3; i++)
+            count += channels[i].size();
         return count;
     }
-    int getVacantChannel(int flag){
-        for(int i = 0;i<channels[flag].size();i++){
-            if(channels[flag].get(i)!=null)
-            if(channels[flag].get(i).vacant)
-                return i;
+
+    int getVacantChannel(int flag) {
+        for (int i = 0; i < channels[flag].size(); i++) {
+            if (channels[flag].get(i) != null)
+                if (channels[flag].get(i).vacant)
+                    return i;
         }
         return -1;
     }
-    public boolean addNewCall(int flag){
+
+    public boolean addNewCall(int flag) {
         Priority p = getPriority(flag);
         int a = getVacantChannel(3);
-        if(a!=-1) {
+        if (a != -1) {
             channels[3].get(a).vacant = false;
             channels[3].get(a).p = p;
             return true;
         }
         double r = new Random().nextDouble();
-        for(int i = 2;i>=0;i--) {
+        for (int i = 2; i >= 0; i--) {
             if (r < probabilities[flag][i]) {
                 a = getVacantChannel(i);
-                if(a!=-1){
+                if (a != -1) {
                     channels[i].get(a).vacant = false;
                     channels[i].get(a).p = p;
                     return true;
@@ -462,15 +482,16 @@ public class BSC implements Runnable {
         }
         return false;
     }
+
     @Deprecated
     public boolean newCallCheck(int flag) {
-        if(totalChannels-getTotalGuardChannels()-(getTotalOngoingCalls()-getTotalOccupied())>0)
+        if (totalChannels - getTotalGuardChannels() - (getTotalOngoingCalls() - getTotalOccupied()) > 0)
             return true;
-        else{
+        else {
             double r = new Random().nextDouble();
-            for(int i = 0;i<3;i++) {
+            for (int i = 0; i < 3; i++) {
                 if (r < probabilities[flag][i]) {
-                    if (guardChannels[i] - occupiedGuardCells[i]>0){
+                    if (guardChannels[i] - occupiedGuardCells[i] > 0) {
                         occupiedGuardCells[i]++;
                         return true;
                     }
@@ -493,7 +514,7 @@ public class BSC implements Runnable {
 //                resetTermination();
 //                resetHandoff();
 //            }
-           // ongoingCalls[flag]++;
+            // ongoingCalls[flag]++;
             // print();
             //pw.println("New Connection Request in " + Thread.currentThread().getName());
 
@@ -504,15 +525,14 @@ public class BSC implements Runnable {
             //  pw.println("New Connection Failed in " + Thread.currentThread().getName());
 
         }
-        if (this.id == 0  && flag==0) {
-            if(check[3] == 20) {
+        if (this.id == 0 && flag == 0) {
+            if (check[3] == 20) {
                 check[3] = 0;
-                if (counter[12] < 10000000 && counter[13] < 10000000) {
+                if (counter[12] < 5000000 && counter[13] < 5000000) {
                     data[12][counter[12]++] = getCurrentChannelsInUse();
                     data[13][counter[13]++] = t;
                 }
-            }
-            else
+            } else
                 check[3]++;
         }
     }
@@ -524,45 +544,78 @@ public class BSC implements Runnable {
         double t = job.startTime + StdRandom.exp(callTerminationRate[flag]);
         Control.addJob(new Job(this.id, Event.DISCONNECT, t, flag));
         freeChannel(flag);
-            //print();
-            //  pw.println("Call Termination in " + Thread.currentThread().getName());
+        //print();
+        //  pw.println("Call Termination in " + Thread.currentThread().getName());
 //                if(ongoingCalls == 0){
 //                    resetHandoff();
 //                    resetTermination();
 //                }
 
     }
-    public void addGuardCell(int flag){
-        Channel c=null;
-        for(int i = 3;i>flag;i--) {
-            if (channels[i].size() > 0) {
-                channels[flag].add(channels[i].get(0));
-                // assert c!=null;
-                channels[i].remove(0);
+
+    public void addGuardCell(int flag) {
+
+        if (channels[3].size() == 0)
+            return;
+        Iterator i = channels[3].iterator();
+        Channel c;
+        int removed = 0;
+        while(i.hasNext()){
+            c = (Channel) i.next();
+            if(c.vacant){
+                removed = 1;
+                channels[flag].add(c);
+                i.remove();
                 return;
             }
         }
-           // channels[flag].add(c);
+        channels[flag].add(channels[3].get(0));
+        // assert c!=null;
+        channels[3].remove(0);
+//
+//        Channel c = null;
+//        for (int i = 3; i > flag; i--) {
+//            if (channels[i].size() > 0) {
+//                channels[flag].add(channels[i].get(0));
+//                // assert c!=null;
+//                channels[i].remove(0);
+//                return;
+//            }
+//        }
+        // channels[flag].add(c);
     }
+
     @Deprecated
     public void incrementGuardChannel(int flag) {
-        if (totalChannels-getTotalGuardChannels()>0) {
+        if (totalChannels - getTotalGuardChannels() > 0) {
             guardChannels[flag]++;
             occupiedGuardCells[flag]++;
             //  pw.println("Guard Channels increased to" + guardChannels);
         }
     }
-    public void freeGuardCell(int flag){
-        Channel c=null;
-        if(channels[flag].size()==0)
+
+    public void freeGuardCell(int flag) {
+        //Channel c = null;
+        if (channels[flag].size() == 0)
             return;
-        if(channels[flag].size()>0) {
+        Iterator i = channels[flag].iterator();
+        Channel c;
+        int removed = 0;
+        while(i.hasNext()){
+            c = (Channel) i.next();
+            if(c.vacant){
+                removed = 1;
+                channels[3].add(c);
+                i.remove();
+                return;
+            }
+        }
             channels[3].add(channels[flag].get(0));
             // assert c!=null;
             channels[flag].remove(0);
-           // channels[3].add(c);
+            // channels[3].add(c);
         }
-    }
+
     @Deprecated
     public void decrementGuardChannel(int flag) {
         if (guardChannels[flag] > 0) {
@@ -573,7 +626,7 @@ public class BSC implements Runnable {
 
     public void reset(int flag) {
         // pw.println("job.startTime  job.event  job.priority  ongoingCalls[0]   ongoingCalls[1]   ongoingCalls[2]  handoffDrops[0]   handoffDrops[0]    handoffDrops[1]   handoffDrops[2]    guardChannels[0]    guardChannels[1   guardChannels[2]         newCallDrops[0]+      newCallDrops[1]+ newCallDrops[2]");
-        if(flag == 1) {
+        if (flag == 1) {
             lastReset = job.startTime;
             for (int i = 0; i < 3; i++) {
                 periodNewCalls[i] = 0;
@@ -582,6 +635,20 @@ public class BSC implements Runnable {
                 periodHandoffDrops[i] = 0;
             }
         }
+    }
+
+    public int getOngoingCalls(int flag) {
+        int count = 0;
+        Priority p = getPriority(flag);
+        for (int i = 0; i < 4; i++) {
+            for (Channel c : channels[i]) {
+                if (!c.vacant) {
+                    if(c.p == p)
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     public void print0() {
@@ -593,9 +660,9 @@ public class BSC implements Runnable {
 //        pw.println(  "**************************************" );
         if (this.id == 0) {
             pw.println(job.startTime + "      " + job.event + "    "+ job.priority);
-            //pw.println("OCCUPIED CHANNELS  -> " + getOccupiedChannels(0) + " " + getOccupiedChannels(1) + " " + getOccupiedChannels(2) +" " + getOccupiedChannels(3));
+            pw.println("OCCUPIED CHANNELS  -> " + getOccupiedChannels(0) + " " + getOccupiedChannels(1) + " " + getOccupiedChannels(2) +" " + getOccupiedChannels(3));
             pw.println("GUARD CHANNELS -> " + channels[0].size() + " " + channels[1].size() + " " + channels[2].size() + " " + channels[3].size());
-            //pw.println("OCCUPIED CHANNELS -> " + occupiedGuardCells[0] + occupiedGuardCells[1] + occupiedGuardCells[2]);
+            pw.println("ONGOING CALLS -> " + getOngoingCalls(0) + "  " + getOngoingCalls(1) + "   " + getOngoingCalls(2));
             pw.println("***********************");
         }
         //pw.println(job.startTime + " " + job.event + " " + ongoingCalls[0] + " " + ongoingCalls[1] + " " + ongoingCalls[2] + " " + handoffDrops[0] + " " + handoffDrops[0] + " " + handoffDrops[1] + " " + handoffDrops[2] + " " + guardChannels[0] + " " + guardChannels[1] + " " + guardChannels[2] + " " + newCallDrops[0] + " " + newCallDrops[1] + " " + newCallDrops[2]);
@@ -606,14 +673,93 @@ public class BSC implements Runnable {
     }
 
     public void initParams() {
-        consecutiveHandoffsLimit = new int[]{4, 2, 2}; //set values
-        probabilities = new double[][]{{0.05, 0.5, 0.8}, {0.0, 0.05, 0.2}, {0.0, 0.0, 0.05}};
-        handoffThreshold = new double[]{0.01, 0.1, 0.5};
-        callTerminationRate = new double[]{0.05, 0.05, 0.05};
-        handoffRate = new double[]{0.01, 0.01, 0.01};
-        callArrivalRate = new double[]{0.5, 0.5, 0.5};
-    }
+        if(simNumber == 1) {
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            callTerminationRate = new double[]{0.005, 0.005, 0.005};
+            handoffRate = new double[]{0.01, 0.01, 0.01};
+            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+        }
+        else if(simNumber == 2){
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            callTerminationRate = new double[]{0.05, 0.05, 0.05};
+            handoffRate = new double[]{0.01, 0.01, 0.01};
+            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+        }
+        else if(simNumber == 3){
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            callTerminationRate = new double[]{0.05, 0.05, 0.05};
+            handoffRate = new double[]{0.1, 0.1, 0.1};
+            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+        }
+        else if(simNumber == 4){
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            callTerminationRate = new double[]{0.05, 0.005, 0.005};
+            handoffRate = new double[]{0.01, 0.01, 0.01};
+            callArrivalRate = new double[]{1, 0.5, 0.5};
+        }
+        else if(simNumber == 5){
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            callTerminationRate = new double[]{0.05, 0.05, 0.05};
+            handoffRate = new double[]{0.1, 0.01, 0.01};
+            callArrivalRate = new double[]{0.5, 0.3, 0.3};
+        }
+        else{
+            consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
+            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            handoffThreshold = new double[]{0.002, 0.01, 0.3};
+            callTerminationRate = new double[]{0.05, 0.08, 0.08};
+            handoffRate = new double[]{0.1, 0.05, 0.05};
+            callArrivalRate = new double[]{0.5, 0.3, 0.3};
+        }
+        PrintWriter qw = null;
+        try {
+            qw = new PrintWriter(this.simNumber+".txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        qw.println("consecutiveHandoffsLimit");
+        printArray(qw,consecutiveHandoffsLimit);
+        for(int i = 0;i<3;i++) {
+            qw.println("probabilities for "+ i);
+            printArray(qw, probabilities[i]);
+        }
 
+        qw.println("handoffThreshold");
+        printArray(qw,handoffThreshold);
+
+        qw.println("callTerminationRate");
+        printArray(qw,callTerminationRate);
+
+        qw.println("handoffRate");
+        printArray(qw,handoffRate);
+
+        qw.println("callArrivalRate");
+        printArray(qw,callArrivalRate);
+
+        qw.close();
+    }
+    public void printArray(PrintWriter pw, double[] arr){
+        for(int i = 0;i<arr.length;i++){
+            pw.print(arr[i]+"  ");
+        }
+        pw.println();
+    }
+    public void printArray(PrintWriter pw, int[] arr){
+        for(int i = 0;i<arr.length;i++){
+            pw.print(arr[i]+"  ");
+        }
+        pw.println();
+    }
     public void initJobs() {
         Priority p;
         for (int i = 0; i < 3; i++) {
@@ -647,7 +793,7 @@ public class BSC implements Runnable {
 
     public void run() {
         // pw.println("job.startTime job.event ongoingCalls handoffDropPercent guardCells newCallDrop% ");
-        pw.println("job.startTime  job.event  ongoingCalls[0]   ongoingCalls[1]   ongoingCalls[2]  handoffDrops[0]   handoffDrops[0]    handoffDrops[1]   handoffDrops[2]    guardChannels[0]    guardChannels[1   guardChannels[2]         newCallDrops[0]+      newCallDrops[1]+ newCallDrops[2]");
+       // pw.println("job.startTime  job.event  ongoingCalls[0]   ongoingCalls[1]   ongoingCalls[2]  handoffDrops[0]   handoffDrops[0]    handoffDrops[1]   handoffDrops[2]    guardChannels[0]    guardChannels[1   guardChannels[2]         newCallDrops[0]+      newCallDrops[1]+ newCallDrops[2]");
         initParams();
         initJobs();
         if(this.id == 0)
@@ -666,28 +812,33 @@ public class BSC implements Runnable {
                     }
                 }
                 // printer System.out.println(Control.BLUE + this.id + " has started job" + Control.RESET);
-                print0();
-                if (job.startTime - lastReset >= 2500) {
+
+                if (job.startTime - lastReset >= 25000) {
                     reset(1);
-               //     print0();
+                    //     print0();
                 }
-                if (job.event == Event.HANDOFF)
-                    handoff();
-                else if (job.event == Event.CONNECT)
-                    connect();
-                else if (job.event == Event.DISCONNECT)
-                    disconnect();
-                else if (job.event == Event.TERMINATE) {
-                    break;
+                synchronized (this.channels) {
+
+                    if (job.event == Event.HANDOFF)
+                        handoff();
+                    else if (job.event == Event.CONNECT)
+                        connect();
+                    else if (job.event == Event.DISCONNECT)
+                        disconnect();
+                    else if (job.event == Event.TERMINATE) {
+                        job = null;
+                        break;
+                    }
+                    job = null;
                 }
-                job = null;
 //                if(id==0) {
 //                    initdata[0][0] = guardChannels[0];
 //                    initdata[1][1] = job.startTime;
 //                   // chart.updateXYSeries("sine",initdata[1],initdata[0]);
 //                }
-                // printer System.out.println(this.id + " has ended job");
-                this.notifyAll();
+                    // printer System.out.println(this.id + " has ended job");
+                    this.notifyAll();
+
             }
         }
         pw.flush();
@@ -723,7 +874,7 @@ public class BSC implements Runnable {
                 System.out.println("Printing Chart "+ (i+1));
                     try {
                         // BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
-                        BitmapEncoder.saveBitmapWithDPI(chart[i], "./Sample_Chart_300_DPI" + i, BitmapEncoder.BitmapFormat.PNG, 600);
+                        BitmapEncoder.saveBitmapWithDPI(chart[i], "./"+simNumber+"Sample_Chart_300_DPI" + i, BitmapEncoder.BitmapFormat.PNG, 600);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

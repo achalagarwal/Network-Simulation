@@ -841,8 +841,7 @@ public class BSC implements Runnable {
 
             }
         }
-        pw.flush();
-        pw.close();
+
         if (id == 0) {
         double tempData[][] = new double[14][];
         for(int i = 0;i<14;i+=2){

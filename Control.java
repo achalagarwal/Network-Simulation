@@ -26,8 +26,8 @@ public class Control extends Thread{
     boolean run;
     static ArrayList<Job> jobs = new ArrayList<>(70);
     static ArrayList<Integer> hList = new ArrayList<>(20);
-    static double time = 0;
-    static double totalSim = 50000;//20000000500000000;
+     static double time = 0;
+    static double totalSim = 50000000;//20000000500000000;
     public  static void addJob(Job n) {
         synchronized (jobs) {
             int i = 0;
@@ -115,7 +115,7 @@ public class Control extends Thread{
                 // printer System.out.println(jobs.size());
 
             }
-            if(time - printer > 1000) {
+            if(time - printer > 10000) {
                 System.out.println(String.format("%.2f",time*100.0/totalSim) +"%");
                 printer = time;
             }

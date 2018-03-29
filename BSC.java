@@ -676,50 +676,50 @@ public class BSC implements Runnable {
         if(simNumber == 1) {
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.05, 0.5};
-            callTerminationRate = new double[]{0.005, 0.005, 0.005};
+            handoffThreshold = new double[]{0.001, 0.01, 0.1};
+            callTerminationRate = new double[]{0.01, 0.01, 0.01};
             handoffRate = new double[]{0.01, 0.01, 0.01};
-            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+            callArrivalRate = new double[]{0.1, 0.1, 0.1};
         }
         else if(simNumber == 2){
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.01, 0.01, 0.01};
-            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+            callArrivalRate = new double[]{0.1, 0.1, 0.1};
         }
         else if(simNumber == 3){
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.05, 0.5};
+            handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
-            handoffRate = new double[]{0.1, 0.1, 0.1};
-            callArrivalRate = new double[]{0.5, 0.5, 0.5};
+            handoffRate = new double[]{0.01, 0.05, 0.02};
+            callArrivalRate = new double[]{0.2, 0.1, 0.1};
         }
         else if(simNumber == 4){
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.05, 0.5};
-            callTerminationRate = new double[]{0.05, 0.005, 0.005};
+            handoffThreshold = new double[]{0.001, 0.01, 0.1};
+            callTerminationRate = new double[]{0.01, 0.005, 0.005};
             handoffRate = new double[]{0.01, 0.01, 0.01};
-            callArrivalRate = new double[]{1, 0.5, 0.5};
+            callArrivalRate = new double[]{0.1, 0.05, 0.05};
         }
         else if(simNumber == 5){
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.05, 0.5};
-            callTerminationRate = new double[]{0.05, 0.05, 0.05};
-            handoffRate = new double[]{0.1, 0.01, 0.01};
-            callArrivalRate = new double[]{0.5, 0.3, 0.3};
+            handoffThreshold = new double[]{0.001, 0.01, 0.1};
+            callTerminationRate = new double[]{0.1, 0.05, 0.05};
+            handoffRate = new double[]{0.3, 0.01, 0.01};
+            callArrivalRate = new double[]{1, 0.1, 0.1};
         }
         else{
             consecutiveHandoffsLimit = new int[]{6, 3, 2}; //set values
             probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
-            handoffThreshold = new double[]{0.002, 0.01, 0.3};
-            callTerminationRate = new double[]{0.05, 0.08, 0.08};
-            handoffRate = new double[]{0.1, 0.05, 0.05};
-            callArrivalRate = new double[]{0.5, 0.3, 0.3};
+            handoffThreshold = new double[]{0.001, 0.03, 0.2};
+            callTerminationRate = new double[]{0.005, 0.06, 0.06};
+            handoffRate = new double[]{0.01, 0.01, 0.01};
+            callArrivalRate = new double[]{0.05, 0.03, 0.03};
         }
         PrintWriter qw = null;
         try {

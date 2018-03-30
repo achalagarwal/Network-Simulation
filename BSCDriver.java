@@ -8,7 +8,7 @@ public class BSCDriver {
         BSC_Control.bscs = new ArrayList<>();
     }
     public static void main(String[] args) {
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < 41; j++) {
             System.out.println("SIMULATION "+j+" HAS BEGUN");
             BSC_Control control = new BSC_Control();
             BSC[] BSCs = new BSC[19];

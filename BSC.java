@@ -722,7 +722,7 @@ public class BSC implements Runnable {
     public void initParams() {
         if(simNumber < 2) {
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.05, 0.5};
             callTerminationRate = new double[]{0.05, 0.005, 0.005};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -730,7 +730,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <4){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.05, 0.5};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -738,7 +738,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber< 6){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.05, 0.5};
             callTerminationRate = new double[]{0.005, 0.005, 0.005};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -746,7 +746,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber<8){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.01, 0.3};
             callTerminationRate = new double[]{0.05, 0.08, 0.08};
             handoffRate = new double[]{0.1, 0.05, 0.05};
@@ -754,7 +754,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber < 10){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.03, 0.2};
             callTerminationRate = new double[]{0.005, 0.06, 0.06};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -762,7 +762,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <12){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.01, 0.005, 0.005};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -770,7 +770,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber<14){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.1, 0.05, 0.05};
             handoffRate = new double[]{0.3, 0.01, 0.01};
@@ -778,7 +778,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <16){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.01, 0.05, 0.02};
@@ -786,7 +786,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <18){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.03, 0.2};
             callTerminationRate = new double[]{0.005, 0.06, 0.06};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -794,7 +794,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <20){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -802,7 +802,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <22){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.01, 0.01, 0.01};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -810,7 +810,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <24){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.01, 0.1};
             callTerminationRate = new double[]{0.01, 0.05, 0.2};
             handoffRate = new double[]{0.03, 0.05, 0.05};
@@ -818,7 +818,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber<26){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.1, 0.5};
             callTerminationRate = new double[]{0.03, 0.05, 0.2};
             handoffRate = new double[]{0.01, 0.05, 0.05};
@@ -826,7 +826,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <28){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.1, 0.5};
             callTerminationRate = new double[]{0.03, 0.05, 0.2};
             handoffRate = new double[]{0.01, 0.05, 0.05};
@@ -834,7 +834,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <30){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.1, 0.5};
             callTerminationRate = new double[]{0.03, 0.1, 0.2};
             handoffRate = new double[]{0.01, 0.05, 0.05};
@@ -842,7 +842,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <32){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.2, 0.5};
             callTerminationRate = new double[]{0.005, 0.06, 0.06};
             handoffRate = new double[]{0.01, 0.01, 0.01};
@@ -850,7 +850,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <34){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.2, 0.5};
             callTerminationRate = new double[]{0.1, 0.005, 0.005};
             handoffRate = new double[]{0.3, 0.04, 0.04};
@@ -858,7 +858,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <36){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.01, 0.3};
             callTerminationRate = new double[]{0.05, 0.08, 0.08};
             handoffRate = new double[]{0.1, 0.05, 0.05};
@@ -866,7 +866,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <38){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.05, 0.5};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.1, 0.01, 0.01};
@@ -874,7 +874,7 @@ public class BSC implements Runnable {
         }
         else if(simNumber <40){
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.002, 0.05, 0.5};
             callTerminationRate = new double[]{0.05, 0.05, 0.05};
             handoffRate = new double[]{0.1, 0.1, 0.1};
@@ -882,7 +882,7 @@ public class BSC implements Runnable {
         }
         else{
             consecutiveHandoffsLimit = new int[]{20, 10, 6}; //set values
-            probabilities = new double[][]{{0.05, 0.1, 0.2}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
+            probabilities = new double[][]{{0.1, 0.2, 0.4}, {0.0, 0.05, 0.1}, {0.0, 0.0, 0.05}};
             handoffThreshold = new double[]{0.001, 0.2, 0.5};
             callTerminationRate = new double[]{0.005, 0.06, 0.06};
             handoffRate = new double[]{0.01, 0.01, 0.01};

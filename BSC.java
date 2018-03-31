@@ -260,6 +260,20 @@ public class BSC implements Runnable {
                 return true;
             }
         }
+        double r = Math.random();
+        if(flag<2) {
+            if(r<0.3){
+                if(vacant[flag+1]>0){
+                    a = getVacantChannel(flag+1);
+                    if(a!=-1) {
+                        channels[flag + 1].get(a).vacant = false;
+                        channels[flag + 1].get(a).p = p;
+                        vacant[flag]--;
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -271,6 +285,8 @@ public class BSC implements Runnable {
             occupiedGuardCells[flag]++;
             return true;
         }
+        //NEW CODE incorporates PROBABILITY
+
         return false;
 
 

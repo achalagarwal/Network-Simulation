@@ -13,7 +13,11 @@ class com implements Comparator<Integer> {
     }
 
 }
+
     public class Test {
+        public static double getNext(int lambda) {
+            return  Math.log(1-Math.random()/(-lambda));
+        }
         public static void main(String[] args) {
             ArrayList<Integer> ints = new ArrayList<>();
             ints.add(new Integer(1));
@@ -24,6 +28,8 @@ class com implements Comparator<Integer> {
             ints.sort(new com());
             ints.add(1, 3);
             System.out.println("Hi");
+            for (int i = 0;i<80;i++)
+                System.out.println(getNext(100));
         }
     }
 

@@ -68,7 +68,7 @@ public class BSC implements Runnable {
 
         if (id == 0) {
 
-            data = new double[14][5000000]; //change this range in handin also 20000000
+            data = new double[14][500000]; //change this range in handin also 20000000
 //            for (int i = 0; i < 6; i++)
 //                for (int j = 0; j < 10000000; j++)
 //                    data[i][j] = 0;
@@ -88,7 +88,7 @@ public class BSC implements Runnable {
         guardChannels = new int[3];
         ongoingCalls = new int[3];
         occupiedGuardCells = new int[3];
-        totalChannels = 100;
+        totalChannels = 300;
         channels = new ArrayList[4];
         for (int i = 0; i < 4; i++)
             channels[i] = new ArrayList<>();
@@ -235,6 +235,15 @@ public class BSC implements Runnable {
     public boolean addNewHandIn(int flag) {
         Priority p = getPriority(flag);
         int a;
+        if(vacant[flag]>0) {
+            a = getVacantChannel(flag);
+            if (a != -1) {
+                channels[flag].get(a).vacant = false;
+                channels[flag].get(a).p = p;
+                vacant[flag]--;
+                return true;
+            }
+        }
         if(vacant[3]>0) {
              a = getVacantChannel(3);
             if (a != -1) {
@@ -246,15 +255,7 @@ public class BSC implements Runnable {
         }
 
         //check vacant[flag]>0
-        if(vacant[flag]>0) {
-            a = getVacantChannel(flag);
-            if (a != -1) {
-                channels[flag].get(a).vacant = false;
-                channels[flag].get(a).p = p;
-                vacant[flag]--;
-                return true;
-            }
-        }
+
         double r = Math.random();
         if(flag<2) {
             if(r<0.3){
@@ -347,7 +348,7 @@ public class BSC implements Runnable {
         Control.removeFromHList(cell);
         if (this.id == 0) {
             if (check[flag] == 5) {
-                if (counter[flag] < 5000000) {
+                if (counter[flag] < 500000) {
                     check[flag] = 0;
                     data[flag * 2][counter[flag * 2]] = channels[flag].size();
                     data[flag * 2 + 1][counter[flag * 2 + 1]] = t;
@@ -505,8 +506,8 @@ public class BSC implements Runnable {
         double r = new Random().nextDouble();
         double tp;
         for (int i = 2; i >= 0; i--) {
-            tp = vacant[i]*0.01+probabilities[flag][i];
-
+           // tp = vacant[i]*0.01+probabilities[flag][i];
+            tp = probabilities[flag][i];
             if (r < tp) {
 
                 if(vacant[i]>0) {
@@ -570,7 +571,7 @@ public class BSC implements Runnable {
         if (this.id == 0 && flag == 0) {
             if (check[3] == 10) {
                 check[3] = 0;
-                if (counter[12] < 5000000 && counter[13] < 5000000) {
+                if (counter[12] < 500000 && counter[13] < 500000) {
                     data[12][counter[12]++] = periodNewCallDrops[0]*100.0/periodNewCalls[0];
                     //data[12][counter[12]++] =totalChannels-vacant[0]-vacant[1]-vacant[2]-vacant[3];
 
@@ -886,21 +887,21 @@ public class BSC implements Runnable {
             probabilities = new double[][]{{0.05,0.2,0.4}, {0.00,0.05,0.1}, {0.00,0.00,0.05}};
             handoffThreshold = new double[]{0.001, 0.2, 0.5};
             callTerminationRate = new double[]{0.0005, 0.006, 0.006};
-            handoffRate = new double[]{0.01, 0.01, 0.01};
-            callArrivalRate = new double[]{0.05, 0.03, 0.03};
+            handoffRate = new double[]{0.1, 0.2, 0.2};
+            callArrivalRate = new double[]{3.1, 2.1, 2.1};
         }
         else {
             Random generator = new Random((long)(1000000000*Math.random()));
-            consecutiveHandoffsLimit = new int[]{(int)(6+6*generator.nextDouble()),(int)(2+4*generator.nextDouble()),(int)(1+3*generator.nextDouble())}; //set values
+            consecutiveHandoffsLimit = new int[]{(int)(6+10*generator.nextDouble()),(int)(2+6*generator.nextDouble()),(int)(1+4*generator.nextDouble())}; //set values
             generator.setSeed((long)(1000000000*Math.random()));
             probabilities = new double[][]{{0 + 0.2*generator.nextDouble(),0.20 + 0.2*generator.nextDouble(),0.4 + 0.2*generator.nextDouble()}, {0.00,0 + 0.2*generator.nextDouble(),0.20 + 0.2*generator.nextDouble()}, {0.00,0.00,0.2*generator.nextDouble()}};
             generator.setSeed((long)(1000000000*Math.random()));
             handoffThreshold = new double[]{0.001, 0.02, 0.1};
-            callTerminationRate = new double[]{generator.nextDouble()/100,generator.nextDouble()/40,generator.nextDouble()/100};
+            callTerminationRate = new double[]{0.001+generator.nextDouble()/80,0.001+generator.nextDouble()/200,0.001+generator.nextDouble()/200};
             generator.setSeed((long)(1000000000*Math.random()));
-            handoffRate = new double[]{0.004 + (0.08-0.004)*generator.nextDouble(), 0.004 + (0.1-0.004)*generator.nextDouble(), 0.004 + (0.1-0.004)*generator.nextDouble()};
+            handoffRate = new double[]{0.004 + (0.1-0.004)*Math.pow(generator.nextDouble(),2), 0.004 + (0.1-0.004)*Math.pow(generator.nextDouble(),2), 0.004 + (0.1-0.004)*Math.pow(generator.nextDouble(),2)};
             generator.setSeed((long)(1000000000*Math.random()));
-            callArrivalRate = new double[]{generator.nextDouble()/7,generator.nextDouble()/10,generator.nextDouble()/10};
+            callArrivalRate = new double[]{0.1+generator.nextDouble()*2,0.1+generator.nextDouble(),0.1+generator.nextDouble()};
         }
         PrintWriter qw = null;
         try {
@@ -1002,7 +1003,7 @@ public class BSC implements Runnable {
                 }
                 // printer System.out.println(Control.BLUE + this.id + " has started job" + Control.RESET);
 
-                if (job.startTime - lastReset >= 25000) {
+                if (job.startTime - lastReset >= 20000) {
                     reset(1);
                     //     print0();
                 }
@@ -1020,6 +1021,7 @@ public class BSC implements Runnable {
                     }
                    // print0();
                     job = null;
+
                 }
 //                if(id==0) {
 //                    initdata[0][0] = guardChannels[0];
@@ -1046,7 +1048,7 @@ public class BSC implements Runnable {
         }
         for(int i =0;i<14;i++){
             tempData[i] = new double[counter[i]];
-            if(counter[i]== 50000000)
+            if(counter[i]== 500000)
                 System.out.println("Overflow of data in "+i);
             for(int j = 0;j<counter[i];j++)
                 tempData[i][j] = data[i][j];
@@ -1072,6 +1074,7 @@ public class BSC implements Runnable {
                         e.printStackTrace();
                     }
             }
+
             /*
             double[] xData = new double[] { 0.0, 1.0, 2.0 };
             double[] yData = new double[] { 2.0, 1.0, 0.0 };

@@ -352,7 +352,7 @@ public class BSC implements Runnable {
                     check[flag] = 0;
                     data[flag * 2][counter[flag * 2]] = channels[flag].size();
                     data[flag * 2 + 1][counter[flag * 2 + 1]] = t;
-                    data[6 + flag * 2][counter[6 + flag * 2]] = presentRatio * 100.0;
+                    data[6 + flag * 2][counter[6 + flag * 2]] = handoffDrops[flag] * 100.0 / totalHandoffs[flag];
                     data[6 + flag * 2 + 1][counter[6 + flag * 2 + 1]] = t;
                     counter[2 * flag]++;
                     counter[flag * 2 + 1]++;
@@ -572,7 +572,7 @@ public class BSC implements Runnable {
             if (check[3] == 10) {
                 check[3] = 0;
                 if (counter[12] < 500000 && counter[13] < 500000) {
-                    data[12][counter[12]++] = periodNewCallDrops[0]*100.0/periodNewCalls[0];
+                    data[12][counter[12]++] = newCallDrops[0]*100.0/totalNewCalls[0];
                     //data[12][counter[12]++] =totalChannels-vacant[0]-vacant[1]-vacant[2]-vacant[3];
 
                     data[13][counter[13]++] = t;
